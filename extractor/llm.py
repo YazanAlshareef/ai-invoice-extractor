@@ -113,5 +113,7 @@ def get_extractor(dry_run=False, fixtures="fixtures"):
     if provider == "fixture":
         return FixtureExtractor(fixtures)
     if provider == "gemini":
+        if not os.environ.get("GEMINI_API_KEY"):
+            raise ExtractionError("GEMINI_API_KEY not set. Put it in .env.local or use --dry-run.")
         return GeminiExtractor()
     raise ExtractionError(f"unknown LLM_PROVIDER '{provider}'")
