@@ -1,0 +1,18 @@
+{
+  "vendor": "Blue Harbor Demo Co",
+  "invoice_number": "INV-1063",
+  "invoice_date": "2026-05-05",
+  "subtotal": "320.00",
+  "tax": "16.00",
+  "total": "336.00",
+  "currency": "USD",
+  "line_items": [
+    {
+      "description": "Desk lamp",
+      "quantity": "10",
+      "unit_price": "32.00",
+      "amount": "320.00"
+    }
+  ],
+  "confidence": 0.55
+}

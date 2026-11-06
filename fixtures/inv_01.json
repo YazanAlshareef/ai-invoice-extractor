@@ -1,0 +1,30 @@
+{
+  "vendor": "Blue Harbor Demo Co",
+  "invoice_number": "INV-1007",
+  "invoice_date": "2026-04-23",
+  "subtotal": "244.99",
+  "tax": "0.00",
+  "total": "244.99",
+  "currency": "USD",
+  "line_items": [
+    {
+      "description": "USB-C cable",
+      "quantity": "1",
+      "unit_price": "9.99",
+      "amount": "9.99"
+    },
+    {
+      "description": "Consulting hour",
+      "quantity": "1",
+      "unit_price": "85.00",
+      "amount": "85.00"
+    },
+    {
+      "description": "Shipping",
+      "quantity": "10",
+      "unit_price": "15.00",
+      "amount": "150.00"
+    }
+  ],
+  "confidence": 0.95
+}

@@ -1,0 +1,18 @@
+{
+  "vendor": "Acme Fictional Ltd",
+  "invoice_number": "INV-1014",
+  "invoice_date": "2026-03-19",
+  "subtotal": "85.00",
+  "tax": "0.00",
+  "total": "85.00",
+  "currency": "USD",
+  "line_items": [
+    {
+      "description": "Consulting hour",
+      "quantity": "1",
+      "unit_price": "85.00",
+      "amount": "85.00"
+    }
+  ],
+  "confidence": 0.95
+}

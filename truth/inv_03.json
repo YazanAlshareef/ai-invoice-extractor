@@ -1,0 +1,36 @@
+{
+  "vendor": "Granite Peak Sample Inc",
+  "invoice_number": "INV-1021",
+  "invoice_date": "2025-12-09",
+  "subtotal": "1422.90",
+  "tax": "0.00",
+  "total": "1422.90",
+  "currency": "USD",
+  "line_items": [
+    {
+      "description": "Printer paper (box)",
+      "quantity": "5",
+      "unit_price": "24.50",
+      "amount": "122.50"
+    },
+    {
+      "description": "Toner cartridge",
+      "quantity": "1",
+      "unit_price": "68.40",
+      "amount": "68.40"
+    },
+    {
+      "description": "Office chair",
+      "quantity": "10",
+      "unit_price": "120.00",
+      "amount": "1200.00"
+    },
+    {
+      "description": "Desk lamp",
+      "quantity": "1",
+      "unit_price": "32.00",
+      "amount": "32.00"
+    }
+  ],
+  "confidence": 0.95
+}

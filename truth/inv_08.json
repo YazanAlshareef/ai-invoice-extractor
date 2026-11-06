@@ -1,0 +1,36 @@
+{
+  "vendor": "Northwind Test Supplies",
+  "invoice_number": "INV-1056",
+  "invoice_date": "2026-06-25",
+  "subtotal": "455.50",
+  "tax": "45.55",
+  "total": "501.05",
+  "currency": "USD",
+  "line_items": [
+    {
+      "description": "Shipping",
+      "quantity": "3",
+      "unit_price": "15.00",
+      "amount": "45.00"
+    },
+    {
+      "description": "Consulting hour",
+      "quantity": "3",
+      "unit_price": "85.00",
+      "amount": "255.00"
+    },
+    {
+      "description": "Desk lamp",
+      "quantity": "2",
+      "unit_price": "32.00",
+      "amount": "64.00"
+    },
+    {
+      "description": "Monitor stand",
+      "quantity": "2",
+      "unit_price": "45.75",
+      "amount": "91.50"
+    }
+  ],
+  "confidence": 0.95
+}

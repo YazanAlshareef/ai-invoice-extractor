@@ -1,0 +1,18 @@
+{
+  "vendor": "Pixel Dummy Studio",
+  "invoice_number": "INV-1049",
+  "invoice_date": "2026-02-15",
+  "subtotal": "1200.00",
+  "tax": "0.00",
+  "total": "1200.00",
+  "currency": "USD",
+  "line_items": [
+    {
+      "description": "Office chair",
+      "quantity": "10",
+      "unit_price": "120.00",
+      "amount": "1200.00"
+    }
+  ],
+  "confidence": 0.95
+}

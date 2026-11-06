@@ -1,0 +1,18 @@
+{
+  "vendor": "Lumen Placeholder LLC",
+  "invoice_number": "INV-1028",
+  "invoice_date": "2026-10-04",
+  "subtotal": "45.75",
+  "tax": "0.00",
+  "total": "135.75",
+  "currency": "USD",
+  "line_items": [
+    {
+      "description": "Monitor stand",
+      "quantity": "1",
+      "unit_price": "45.75",
+      "amount": "45.75"
+    }
+  ],
+  "confidence": 0.95
+}
