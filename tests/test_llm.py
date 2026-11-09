@@ -1,6 +1,6 @@
 import pytest
 
-from extractor.llm import ExtractionError, FixtureExtractor, GeminiExtractor, parse_json
+from extractor.llm import ExtractionError, FatalExtractionError, FixtureExtractor, GeminiExtractor, parse_json
 
 
 class Boom(Exception):
@@ -64,7 +64,7 @@ def test_gives_up_after_max_retries(pdf):
 
 def test_non_retryable_error_fails_at_once(pdf):
     ex, sleeps = make([Boom(400)])
-    with pytest.raises(ExtractionError):
+    with pytest.raises(FatalExtractionError):
         ex.extract(pdf)
     assert ex._client.calls == 1 and sleeps == []
 

@@ -56,3 +56,15 @@ def test_schema_failure_goes_to_review(tmp_path):
 
     run(one_file_inbox(tmp_path), Bad(), tmp_path / "out", TODAY)
     assert "schema" in rows(tmp_path / "out" / "review.csv")[0]["reason"]
+
+
+def test_fatal_error_stops_the_run(tmp_path):
+    import pytest
+    from extractor.llm import FatalExtractionError
+
+    class RetiredModel:
+        def extract(self, p):
+            raise FatalExtractionError("404 model gone")
+
+    with pytest.raises(FatalExtractionError):
+        run(one_file_inbox(tmp_path), RetiredModel(), tmp_path / "out", TODAY)

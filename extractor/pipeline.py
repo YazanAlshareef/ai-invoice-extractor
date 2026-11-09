@@ -3,7 +3,7 @@ from datetime import date
 from pathlib import Path
 
 from . import checks
-from .llm import ExtractionError
+from .llm import ExtractionError, FatalExtractionError
 from .store import Store
 
 EXTS = {".pdf", ".png", ".jpg", ".jpeg"}
@@ -13,6 +13,8 @@ def process_file(path: Path, extractor, store: Store, seen: set[str], today: dat
     """Returns ("ok", []) or ("review", reasons)."""
     try:
         raw = extractor.extract(path)
+    except FatalExtractionError:
+        raise
     except ExtractionError as e:
         store.add_review(path.name, [f"extraction failed: {e}"], None)
         return "review", [str(e)]

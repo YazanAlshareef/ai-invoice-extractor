@@ -26,6 +26,13 @@ class ExtractionError(Exception):
     pass
 
 
+class FatalExtractionError(ExtractionError):
+    """Same failure would hit every file (bad key, retired model). Stop the run."""
+
+
+FATAL_CODES = {400, 401, 403, 404}
+
+
 def parse_json(text: str) -> dict:
     """Model output -> dict. Tolerates ```json fences."""
     t = re.sub(r"^```(?:json)?\s*|\s*```$", "", (text or "").strip())
@@ -47,7 +54,7 @@ def _retry_delay(err) -> float | None:
 class GeminiExtractor:
     def __init__(self, client=None, model=None, max_retries=5, base_delay=2.0,
                  min_interval=None, sleep=time.sleep, clock=time.monotonic):
-        self.model = model or os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+        self.model = model or os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
         self.max_retries, self.base_delay = max_retries, base_delay
         # free tier allows roughly 10 requests/min on flash models; 6s spacing stays under
         self.min_interval = float(os.environ.get("GEMINI_MIN_INTERVAL", 6)) if min_interval is None else min_interval
@@ -88,6 +95,8 @@ class GeminiExtractor:
                 raise
             except Exception as e:  # SDK errors carry .code; anything else is not retried
                 code = getattr(e, "code", None)
+                if code in FATAL_CODES:
+                    raise FatalExtractionError(f"Gemini call failed ({code}): {e}") from e
                 if code not in RETRY_CODES or attempt == self.max_retries:
                     raise ExtractionError(f"Gemini call failed ({code}): {e}") from e
                 delay = _retry_delay(e) or self.base_delay * 2 ** attempt
