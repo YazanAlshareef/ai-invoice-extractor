@@ -68,7 +68,9 @@ class GeminiExtractor:
             if not key:
                 raise ExtractionError("GEMINI_API_KEY not set. Put it in .env.local or use --dry-run.")
             from google import genai  # lazy: tests and dry-run need no SDK call
-            self._client = genai.Client(api_key=key)
+            from google.genai import types
+            # a hung request has no default timeout in the SDK; 60s then retry
+            self._client = genai.Client(api_key=key, http_options=types.HttpOptions(timeout=60_000))
         return self._client
 
     def _throttle(self):
@@ -95,6 +97,8 @@ class GeminiExtractor:
                 raise
             except Exception as e:  # SDK errors carry .code; anything else is not retried
                 code = getattr(e, "code", None)
+                if code is None and "timeout" in type(e).__name__.lower():
+                    code = 504  # treat client-side timeouts like a gateway timeout
                 if code in FATAL_CODES:
                     raise FatalExtractionError(f"Gemini call failed ({code}): {e}") from e
                 if code not in RETRY_CODES or attempt == self.max_retries:
