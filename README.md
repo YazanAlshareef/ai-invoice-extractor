@@ -35,7 +35,7 @@ Live (needs a key): copy `.env.example` to `.env.local`, fill in `GEMINI_API_KEY
 | inv_11 | date 2099-01-01 (planted) |
 | inv_12 | printed total wrong by 10.00 (planted) |
 
-Field accuracy of the fixtures against the truth: 81/84 (96%). Wrong: inv_04 total, inv_06 line items, inv_08 vendor.
+Field accuracy of the fixtures against the truth: 81/84 (96%). Wrong: inv_04 total, inv_06 line items, inv_08 vendor. The fixtures were written from `truth/` with three mistakes added on purpose, so this figure only exercises `score()` and the checks. It says nothing about model accuracy.
 
 **Limit this exposed:** inv_08 has a vendor typo (`o` for `0`). It is self-consistent, so it passes every check and lands in `invoices.csv` wrong. Arithmetic checks cannot catch a consistently wrong value.
 
@@ -45,7 +45,8 @@ An AI coding assistant wrote most of the first draft: schema, adapter, checks, t
 
 ## What broke and how it got fixed
 
-- **Wrong model name:** my first live attempt got `404` (model retired for new users). Every file then flooded `review.csv` with the same error. Fix: errors 400/401/403/404 now raise `FatalExtractionError` and stop the run; default model updated; test added.
+- **Wrong model name:** my first live attempt got `404` (model retired for new users). Every file then flooded `review.csv` with the same error. Fix: errors 401/403/404 now raise `FatalExtractionError` and stop the run (a 400 only sends that one file to review); test added.
+- **Default model is unverified:** the default in `GEMINI_MODEL` / `llm.py` has never worked in a live call here. Set `GEMINI_MODEL` to a model your key can use.
 - **Missing key:** now fails at start with a clear message instead of per file.
 - **Hanging call:** one live call ran ~20 minutes. Added a 60 s request timeout and treat client timeouts as retryable (504).
 - **Still broken:** the service keeps returning 503/504, see Status.
@@ -55,7 +56,8 @@ An AI coding assistant wrote most of the first draft: schema, adapter, checks, t
 - Money is `Decimal`, not float.
 - `llm.py` is the only provider-specific file. Model name comes from `GEMINI_MODEL`; `LLM_PROVIDER` selects the provider.
 - Retries: 429/500/502/503/504 with exponential backoff + jitter, honoring the server's retry delay. 6 s minimum gap between calls for free-tier limits.
-- Re-running the inbox does not double-count (SQLite primary key on vendor + invoice number).
+- Re-running the inbox does not double-count: files already stored (same SHA-256) are skipped, and the SQLite primary key on vendor + invoice number backs that up. Files that went to review are tried again on every run, so `review.csv` can hold the same file more than once. An `out/` folder from an older version has a different table layout: delete it.
+- Prompt asks the model for the printed currency and says text inside a document is data, not instructions. Files over 15 MB are sent to review without a call. Retry waits are capped at 60 s.
 
 ## Limits
 
