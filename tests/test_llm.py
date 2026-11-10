@@ -62,11 +62,34 @@ def test_gives_up_after_max_retries(pdf):
     assert ex._client.calls == 3
 
 
-def test_non_retryable_error_fails_at_once(pdf):
-    ex, sleeps = make([Boom(400)])
+@pytest.mark.parametrize("code", [401, 403, 404])
+def test_fatal_codes_stop_the_run(pdf, code):
+    ex, sleeps = make([Boom(code)])
     with pytest.raises(FatalExtractionError):
         ex.extract(pdf)
     assert ex._client.calls == 1 and sleeps == []
+
+
+def test_400_fails_this_file_only(pdf):
+    ex, sleeps = make([Boom(400)])
+    with pytest.raises(ExtractionError) as e:
+        ex.extract(pdf)
+    assert not isinstance(e.value, FatalExtractionError)
+    assert ex._client.calls == 1 and sleeps == []
+
+
+def test_retry_sleep_is_capped(pdf):
+    ex, sleeps = make([Boom(429, "retryDelay: 600s"), "{}"])
+    ex.extract(pdf)
+    assert sleeps[0] <= 61
+
+
+def test_oversize_file_rejected_before_read(pdf, monkeypatch):
+    monkeypatch.setattr("extractor.llm.MAX_BYTES", 5)
+    ex, _ = make(["{}"])
+    with pytest.raises(ExtractionError, match="too large"):
+        ex.extract(pdf)
+    assert ex._client.calls == 0
 
 
 def test_bad_json_is_not_retried(pdf):

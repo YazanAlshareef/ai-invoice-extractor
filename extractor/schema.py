@@ -19,7 +19,7 @@ class Invoice(BaseModel):
     subtotal: Decimal = Field(ge=0)
     tax: Decimal = Field(ge=0)
     total: Decimal = Field(ge=0)
-    currency: str = Field(default="USD", min_length=3, max_length=3)
+    currency: str = Field(min_length=3, max_length=3)
     line_items: list[LineItem] = Field(min_length=1)
     # model's own 0..1 self-rating; used to route weak rows to review
     confidence: float = Field(default=1.0, ge=0, le=1)
