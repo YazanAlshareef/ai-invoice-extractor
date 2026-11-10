@@ -10,7 +10,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from .llm import ExtractionError, get_extractor
+from .llm import ExtractionError, FatalExtractionError, get_extractor
 
 FIELDS = ["vendor", "invoice_number", "invoice_date", "subtotal", "tax", "total"]
 
@@ -35,10 +35,14 @@ def score(raw: dict, truth: dict) -> dict:
 def evaluate(extractor, inbox="inbox", truth_dir="truth"):
     rows = {}
     for t in sorted(Path(truth_dir).glob("*.json")):
-        f = next(Path(inbox).glob(t.stem + ".*"))
+        f = next(Path(inbox).glob(t.stem + ".*"), None)
+        if f is None:
+            raise SystemExit(f"no file in {inbox}/ for truth/{t.name}")
         truth = json.loads(t.read_text(encoding="utf-8"))
         try:
             rows[t.stem] = score(extractor.extract(f), truth)
+        except FatalExtractionError:
+            raise  # same failure for every file: stop instead of reporting 0%
         except ExtractionError as e:
             rows[t.stem] = {k: False for k in FIELDS + ["line_items"]}
             print(f"{t.stem}: extraction failed: {e}")
@@ -66,4 +70,7 @@ if __name__ == "__main__":
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
     load_dotenv(".env.local")
-    print(report(evaluate(get_extractor(a.dry_run))))
+    try:
+        print(report(evaluate(get_extractor(a.dry_run))))
+    except ExtractionError as e:  # includes FatalExtractionError (bad key, retired model)
+        raise SystemExit(f"evaluation stopped: {e}")
