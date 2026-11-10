@@ -28,21 +28,24 @@ class Store:
         self.db = sqlite3.connect(self.dir / "invoices.sqlite")
         self.db.executescript("""
         CREATE TABLE IF NOT EXISTS invoices(
-          dup_key TEXT PRIMARY KEY, source_file TEXT, vendor TEXT, invoice_number TEXT,
+          dup_key TEXT PRIMARY KEY, file_hash TEXT, source_file TEXT, vendor TEXT, invoice_number TEXT,
           invoice_date TEXT, subtotal TEXT, tax TEXT, total TEXT, currency TEXT, confidence REAL);
         CREATE TABLE IF NOT EXISTS line_items(
           dup_key TEXT REFERENCES invoices(dup_key), description TEXT, quantity TEXT, unit_price TEXT, amount TEXT);
         """)
 
+    def seen_hashes(self) -> set[str]:
+        return {r[0] for r in self.db.execute("SELECT file_hash FROM invoices")}
+
     def seen_keys(self) -> set[str]:
         return {r[0] for r in self.db.execute("SELECT dup_key FROM invoices")}
 
-    def add_invoice(self, inv: Invoice, source_file: str):
+    def add_invoice(self, inv: Invoice, source_file: str, file_hash: str = ""):
         k = dup_key(inv)
         row = {"source_file": source_file, **inv.model_dump(mode="json", exclude={"line_items"})}
         with self.db:
-            self.db.execute("INSERT INTO invoices VALUES(?,?,?,?,?,?,?,?,?,?)",
-                            (k, *[row[c] for c in INV_COLS]))
+            self.db.execute("INSERT INTO invoices VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                            (k, file_hash, *[row[c] for c in INV_COLS]))
             self.db.executemany("INSERT INTO line_items VALUES(?,?,?,?,?)",
                                 [(k, li.description, str(li.quantity), str(li.unit_price), str(li.amount)) for li in inv.line_items])
         _append(self.dir / "invoices.csv", INV_COLS, row)

@@ -1,4 +1,5 @@
 """inbox file -> extractor -> validate -> checks -> store or review."""
+import hashlib
 from datetime import date
 from pathlib import Path
 
@@ -9,8 +10,12 @@ from .store import Store
 EXTS = {".pdf", ".png", ".jpg", ".jpeg"}
 
 
-def process_file(path: Path, extractor, store: Store, seen: set[str], today: date | None = None):
-    """Returns ("ok", []) or ("review", reasons)."""
+def process_file(path: Path, extractor, store: Store, seen: set[str], today: date | None = None,
+                 hashes: set[str] | None = None):
+    """Returns ("ok", []), ("review", reasons) or ("skipped", [])."""
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if hashes is not None and digest in hashes:
+        return "skipped", ["already stored"]
     try:
         raw = extractor.extract(path)
     except FatalExtractionError:
@@ -25,17 +30,17 @@ def process_file(path: Path, extractor, store: Store, seen: set[str], today: dat
     if problems:
         store.add_review(path.name, problems, raw)
         return "review", problems
-    store.add_invoice(inv, path.name)
+    store.add_invoice(inv, path.name, digest)
     seen.add(checks.dup_key(inv))
     return "ok", []
 
 
 def run(inbox, extractor, out_dir="out", today: date | None = None):
     store = Store(out_dir)
-    seen = store.seen_keys()
+    seen, hashes = store.seen_keys(), store.seen_hashes()
     results = {}
     for p in sorted(Path(inbox).iterdir()):
         if p.suffix.lower() in EXTS:
-            results[p.name] = process_file(p, extractor, store, seen, today)
+            results[p.name] = process_file(p, extractor, store, seen, today, hashes)
     store.close()
     return results

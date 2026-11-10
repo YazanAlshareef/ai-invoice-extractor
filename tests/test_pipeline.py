@@ -36,7 +36,11 @@ def test_rerun_writes_nothing_new(tmp_path):
     run(ROOT / "inbox", ex, tmp_path, TODAY)
     res = run(ROOT / "inbox", ex, tmp_path, TODAY)
     assert sum(s == "ok" for s, _ in res.values()) == 0
+    assert sum(s == "skipped" for s, _ in res.values()) == 6
     assert len(rows(tmp_path / "invoices.csv")) == 6
+    # stored invoices are skipped, not re-reported as duplicates; only the 6 review files repeat
+    assert len(rows(tmp_path / "review.csv")) == 12
+    assert not any(r["source_file"] == "inv_01.pdf" for r in rows(tmp_path / "review.csv"))
 
 
 def test_extraction_failure_goes_to_review(tmp_path):
